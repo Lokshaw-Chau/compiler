@@ -36,7 +36,7 @@ public class LexicalAnalyzer {
      * @param path 路径
      */
     public void loadFile(String path) {
-        // TODO: 词法分析前的缓冲区实现
+        // 词法分析前的缓冲区实现
         // 可自由实现各类缓冲区
         // 或直接采用完整读入方法
         //throw new NotImplementedException();
@@ -59,8 +59,7 @@ public class LexicalAnalyzer {
      * 需要维护实验一所需的符号表条目, 而得在语法分析中才能确定的符号表条目的成员可以先设置为 null
      */
     public void run() {
-        // TODO: 自动机实现的词法分析过程
-        //throw new NotImplementedException();
+        // 自动机实现的词法分析过程
         int begin = 0;
         int forward;
         int status;
@@ -70,12 +69,16 @@ public class LexicalAnalyzer {
             status = 0;
             forward = begin;
             int flag = 0;
-            while (flag == 0 && forward < code.length()) {
+            while (flag == 0) {
                 switch (status) {
                     //start
                     case 0:
                         switch (code.charAt(forward)) {
-                            case '\b' | '\t' | '\n':
+                            case ' ':
+                            case '\n':
+                            case '\r':
+                            case '\t':
+                                flag = 1;
                                 status = 0;
                                 break;
                             case '*':
@@ -130,8 +133,20 @@ public class LexicalAnalyzer {
                         }
                         break;
                     case 15:
-                        tokenList.add(Token.normal("id", code.substring(begin, forward - 1)));
+                        if(code.substring(begin, forward - 1).equals("int")){
+                            tokenList.add(Token.simple("int"));
+                        }
+                        else if(code.substring(begin, forward - 1).equals("return")){
+                            tokenList.add(Token.simple("return"));
+                        }
+                        else{
+                            tokenList.add(Token.normal("id", code.substring(begin, forward - 1)));
+                            if(!symbolTable.has(code.substring(begin, forward - 1))){
+                                symbolTable.add(code.substring(begin, forward - 1));
+                            }
+                        }
                         flag = 1;
+                        forward = forward-2;
                         break;
                     case 16:
                         if (digit.contains(code.charAt(forward) + "")) {
@@ -142,25 +157,28 @@ public class LexicalAnalyzer {
                         break;
                     case 17:
                         tokenList.add(Token.normal("IntConst", code.substring(begin, forward - 1)));
+                        forward = forward-2;
                         flag = 1;
                         break;
                     case 18:
                         switch (code.charAt(forward)) {
                             case '*':
-                                status = 19;
+                                status = 20;
                                 break;
                             default:
-                                status = 20;
+                                status = 19;
                                 break;
                         }
                         break;
                     case 19:
                         flag = 1;
                         tokenList.add(Token.simple("*"));
+                        forward = forward-1;
                         break;
                     case 20:
                         flag = 1;
                         tokenList.add(Token.simple("**"));
+                        forward = forward-1;
                     case 21:
                         switch (code.charAt(forward)) {
                             case '=':
@@ -174,10 +192,12 @@ public class LexicalAnalyzer {
                     case 22:
                         flag = 1;
                         tokenList.add(Token.simple("=="));
+                        forward = forward-1;
                         break;
                     case 23:
                         flag = 1;
                         tokenList.add(Token.simple("="));
+                        forward = forward-1;
                         break;
                     case 24:
                         if (code.charAt(forward) == '"') {
@@ -189,34 +209,42 @@ public class LexicalAnalyzer {
                     case 25:
                         flag = 1;
                         tokenList.add(Token.normal("String", code.substring(begin, forward)));
+                        forward = forward-1;
                         break;
                     case 26:
                         flag = 1;
                         tokenList.add(Token.simple("("));
+                        forward = forward-1;
                         break;
                     case 27:
                         flag = 1;
                         tokenList.add(Token.simple(")"));
+                        forward = forward-1;
                         break;
                     case 28:
                         flag = 1;
                         tokenList.add(Token.simple("Semicolon"));
+                        forward = forward-1;
                         break;
                     case 29:
                         flag = 1;
                         tokenList.add(Token.simple("+"));
+                        forward = forward-1;
                         break;
                     case 30:
                         flag = 1;
                         tokenList.add(Token.simple("-"));
+                        forward = forward-1;
                         break;
                     case 31:
                         flag = 1;
                         tokenList.add(Token.simple("/"));
+                        forward = forward-1;
                         break;
                     case 32:
                         flag = 1;
                         tokenList.add(Token.simple(","));
+                        forward = forward-1;
                         break;
                     default:
                 }
@@ -224,6 +252,7 @@ public class LexicalAnalyzer {
             }
             begin = forward;
         }
+        tokenList.add(Token.eof());
     }
 
     /**

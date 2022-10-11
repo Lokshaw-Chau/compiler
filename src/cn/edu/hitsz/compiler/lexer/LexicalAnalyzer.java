@@ -261,7 +261,7 @@ public class LexicalAnalyzer {
      * @return Token 列表
      */
     public Iterable<Token> getTokens() {
-        // TODO: 从词法分析过程中获取 Token 列表
+        // 从词法分析过程中获取 Token 列表
         // 词法分析过程可以使用 Stream 或 Iterator 实现按需分析
         // 亦可以直接分析完整个文件
         // 总之实现过程能转化为一列表即可
